@@ -2,984 +2,573 @@
 <html lang="es-MX">
 <head>
 <meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>La Redacción de la Verdad: Reportero Estrella</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>Reportero Estrella: Edición Kids</title>
 <style>
-  /* =========================================================
-   * LA REDACCIÓN DE LA VERDAD: REPORTERO ESTRELLA
-   * Juego educativo (HECHO vs OPINIÓN vs NOTICIA FALSA)
-   * Público: 3° de primaria | ES-MX | Desktop/Tablet
-   * ---------------------------------------------------------
-   * Docentes: todo es editable. Busca los bloques:
-   *  - VARIABLES DE TEMA (colores, tamaños)
-   *  - TEXTOS VOZ EN OFF
-   *  - DATOS DE LOS CASOS (array 'casosDetallados' y 'casos')
-   *  - SONS (WebAudio) y música
-   *  - ANIMACIONES y ACCESIBILIDAD
-   * =======================================================*/
+  /* ===================== ESTILOS VISUALES (KIDS) ===================== */
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap');
 
-  /* ===================== VARIABLES DE TEMA ===================== */
   :root{
-    --bg:#f4f1ea;               /* tono papel periódico */
-    --ink:#1b1b1b;              /* “tinta” */
-    --brand:#e63946;            /* rojo prensa */
-    --accent:#2a9d8f;           /* turquesa brillante */
-    --accent2:#f4a261;          /* naranja brillante */
-    --good:#00a86b;             /* correcto */
-    --warn:#ffb703;             /* aviso */
-    --bad:#d90429;              /* grave */
-    --panel:#ffffff;
-    --contrastEdge:#000;
-    --shadow:0 6px 16px rgba(0,0,0,.15);
-    --focus: 0 0 0 4px rgba(42,157,143,.35);
-    --touch: 72px;              /* zonas táctiles ≥ 64px */
-    --radius:16px;
-    --font: "Atkinson Hyperlegible", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    --bg-pattern: #f0f8ff;
+    --primary: #4cc9f0; /* Azul brillante */
+    --secondary: #f72585; /* Rosa chicle */
+    --accent: #ffd166; /* Amarillo */
+    --dark: #2b2d42;
+    --success: #06d6a0;
+    --font: 'Fredoka', system-ui, sans-serif; /* Fuente amigable */
   }
-  /* Alto contraste */
-  .alto-contraste :root, body.alto-contraste{
-    --bg:#000;
-    --ink:#fff;
-    --panel:#000;
-    --brand:#fff;
-    --accent:#fff;
-    --accent2:#fff;
-    --good:#fff;
-    --warn:#fff;
-    --bad:#fff;
-    --shadow:none;
-    --focus: 0 0 0 4px #fff;
-  }
-
-  /* ===================== LAYOUT BASE ===================== */
-  *{box-sizing:border-box}
-  html,body{height:100%}
+  
   body{
-    margin:0; background:var(--bg); color:var(--ink); font-family:var(--font); line-height:1.15;
+    margin:0; background-color: var(--bg-pattern);
+    color:var(--dark); font-family:var(--font); overflow:hidden; user-select:none;
+    /* Patrón de fondo estilo libreta */
+    background-image: radial-gradient(#cbd5e1 2px, transparent 2px);
+    background-size: 24px 24px;
   }
-  #app{min-height:100dvh; display:flex; flex-direction:column}
+  
+  #app{ display:flex; flex-direction:column; height:100dvh; }
+
+  /* --- HEADER DIVERTIDO --- */
   header{
-    padding:12px clamp(12px,2vw,24px);
-    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
-    border-bottom:4px double var(--ink);
-    background:linear-gradient(180deg, #fff8, #0000), var(--panel);
-    position:sticky; top:0; z-index:10;
+    background:#fff; padding:15px 20px; 
+    border-bottom: 5px solid var(--dark);
+    display:flex; align-items:center; justify-content:space-between; 
+    box-shadow: 0 5px 0 rgba(0,0,0,0.1); z-index:10;
   }
-  .logo {
-    font-weight:900; letter-spacing:.5px; text-transform:uppercase;
-    display:flex; align-items:center; gap:10px; font-size: clamp(16px, 2vw, 20px);
+  .logo { font-size: 1.5rem; font-weight: 600; color: var(--secondary); text-transform: uppercase; letter-spacing: 1px; }
+  .score-board { background: var(--accent); padding: 5px 15px; border-radius: 20px; border: 3px solid var(--dark); font-weight: bold; }
+  
+  /* --- ÁREA DE JUEGO --- */
+  #game-area{
+    flex:1; position:relative; 
+    display:grid; grid-template-columns: 110px 1fr 150px; 
+    align-items:center; padding:10px; gap: 10px;
   }
-  .logo .badge{display:inline-grid; place-items:center; width:36px; height:36px; border:2px solid var(--ink); border-radius:6px; background:#fff}
-  .controls{margin-left:auto; display:flex; flex-wrap:wrap; gap:10px}
-  .toggle{
-    display:inline-flex; align-items:center; gap:8px; padding:6px 10px;
-    border:2px solid var(--ink); border-radius:999px; background:#fff; cursor:pointer; user-select:none;
-  }
-  .toggle input{appearance:none; width:22px; height:22px; border:2px solid var(--ink); border-radius:999px; display:inline-block; position:relative}
-  .toggle input:checked::after{content:""; position:absolute; inset:2px; background:var(--accent); border-radius:999px}
-  .btn{
-    display:inline-flex; align-items:center; justify-content:center; gap:8px;
-    min-height: var(--touch); padding: 12px 18px; font-weight:700; border:3px solid var(--ink);
-    background: #fff; border-radius:var(--radius); cursor:pointer; box-shadow:var(--shadow);
-    transition: transform .08s ease;
-  }
-  .btn:active{transform: translateY(2px)}
-  .btn.primary{background: var(--accent); color:#fff; border-color:#0e5b52}
-  .btn.secondary{background: var(--accent2); color:#000; border-color:#b46a2f}
-  .btn.ghost{background:transparent}
-  .btn.block{width:100%}
 
-  main{flex:1; display:grid; place-items:center; padding: clamp(12px,2vw,24px)}
-  section.panel{
-    width:min(1100px, 96vw); min-height: min(680px, 80vh);
-    background:var(--panel); border:3px solid var(--ink); border-radius:var(--radius);
-    padding: clamp(16px, 2.2vw, 28px);
-    box-shadow: var(--shadow);
-    display:grid; grid-template-rows:auto 1fr auto; gap:12px;
+  /* 1. BARRA IZQUIERDA (HERRAMIENTAS) */
+  .sidebar-left{
+    display:flex; flex-direction:column; gap:25px; align-items:center; z-index: 20;
   }
-  h1,h2,h3{margin:.2em 0}
-  h1{font-size: clamp(28px, 4.5vw, 44px); line-height:1.05}
-  h2{font-size: clamp(18px, 2.8vw, 28px)}
-  p{margin:.4em 0 .6em}
+  .tool-btn{
+    width:85px; height:85px;
+    background:#fff; border:4px solid var(--dark); border-radius:50%;
+    font-size:40px; cursor:pointer;
+    display:grid; place-items:center;
+    box-shadow: 5px 5px 0 rgba(0,0,0,0.2);
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); /* Rebote */
+    position: relative;
+  }
+  .tool-btn:hover { transform: scale(1.1) rotate(5deg); background: #fdfdfd; }
+  .tool-btn:active{ transform:scale(0.9); box-shadow: 2px 2px 0 rgba(0,0,0,0.2); }
+  
+  .tool-label{ 
+    position: absolute; bottom: -12px;
+    font-size:12px; font-weight:bold; background:var(--accent); 
+    padding:4px 8px; border-radius:12px; border:2px solid var(--dark);
+    white-space: nowrap;
+  }
 
-  /* ===================== PANTALLA INICIO ===================== */
-  .start-grid{
-    display:grid; grid-template-columns: 1.2fr .8fr; gap: clamp(14px,2.2vw,28px);
-    align-items:center;
+  /* 2. CENTRO (TARJETA) */
+  .center-stage{
+    display:flex; justify-content:center; align-items:center; height:100%; z-index: 10;
+    perspective: 1000px;
   }
-  .newspaper{
-    border:3px solid var(--ink); border-radius:12px; padding:16px; background:repeating-linear-gradient( #fff, #fff 28px, #f2f2f2 28px, #f2f2f2 56px);
-    position:relative; overflow:hidden; box-shadow:var(--shadow);
-  }
-  .newspaper .masthead{font-weight:900; font-size: clamp(20px,2.4vw,28px); text-transform:uppercase; letter-spacing:1px; border-bottom:3px double var(--ink); padding-bottom:8px; margin-bottom:10px}
-  .newspaper .hero{display:grid; grid-template-columns:120px 1fr; gap:12px; align-items:center}
-  .avatar-editor{
-    width:120px; height:120px; border:3px solid var(--ink); border-radius:12px; display:grid; place-items:center; background:
-      radial-gradient(circle at 35% 35%, #ffd, #fff 50%),
-      linear-gradient(#fdfdfd, #f0f0f0);
-    font-size:64px;
-  }
-  .cta-col{display:grid; gap:12px}
-  .tagline{font-weight:700; font-size: clamp(14px, 1.9vw, 18px)}
-  .pill{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border:2px dashed var(--ink); border-radius:999px; background:#fff}
-
-  /* ===================== MODAL CÓMO SE JUEGA ===================== */
-  .modal{position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; place-items:center; padding:16px; z-index:999}
-  .modal.open{display:grid}
-  .modal .sheet{width:min(900px,95vw); background:var(--panel); color:var(--ink); border:3px solid var(--ink); border-radius:16px; padding:18px; box-shadow:var(--shadow)}
-  .how-grid{display:grid; gap:12px}
-  .slides{display:grid; grid-template-columns:1fr; min-height:280px; border:2px dashed var(--ink); border-radius:12px; place-items:center; padding:16px; text-align:center}
-  .slide-illu{font-size: clamp(48px, 5vw, 84px)}
-  .slide-caption{font-weight:800; font-size: clamp(18px, 2.3vw, 24px)}
-  .nav-slides{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:8px}
-  .dots{display:flex; gap:6px}
-  .dot{width:12px; height:12px; border:2px solid var(--ink); border-radius:999px}
-  .dot.active{background:var(--accent)}
-
-  /* ===================== BRIEFING ===================== */
-  .brief-grid{display:grid; grid-template-columns: 220px 1fr; gap:16px}
-  .editor-card{border:3px solid var(--ink); border-radius:12px; padding:10px; display:grid; gap:8px; align-content:start; background: #fff}
-  .editor-ava{font-size:88px; display:grid; place-items:center; border:3px solid var(--ink); border-radius:12px; background:#ffe}
-  .speech{border:3px solid var(--ink); border-radius:12px; padding:12px; background:#fdfcf7; font-weight:800}
-  .demo-row{display:grid; grid-template-columns:1fr 1fr; gap:12px}
   .card{
-    border:3px solid var(--ink); border-radius:12px; padding:12px; background:#fff;
-    min-height:120px; display:grid; gap:8px; position:relative; touch-action:none;
+    width: 320px; min-height: 420px;
+    background: #fff; border: 4px solid var(--dark); border-radius: 20px;
+    padding: 25px; padding-bottom: 70px;
+    display: flex; flex-direction: column; gap: 15px;
+    box-shadow: 10px 10px 0 rgba(0,0,0,0.15);
+    position: relative; cursor: grab;
+    transform-origin: center;
   }
+  /* Decoración de "Clip" o cinta en la tarjeta */
+  .card::before {
+    content: ''; position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 60px; background: rgba(0,0,0,0.1); border-radius: 20px; z-index: -1;
+  }
+  .card::after {
+    content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    width: 100px; height: 25px; background: var(--secondary); opacity: 0.8;
+    transform: translateX(-50%) rotate(-2deg); border: 2px solid rgba(0,0,0,0.1);
+  }
+
+  .card.dragging{ cursor: grabbing; transform: scale(1.05) rotate(3deg); z-index: 9999; }
+  .card.selected { border-color: var(--secondary); box-shadow: 0 0 0 8px rgba(247, 37, 133, 0.3); }
+
+  .card-header { 
+    font-weight:900; text-transform:uppercase; 
+    border-bottom:3px dashed #ddd; padding-bottom:10px; 
+    color: var(--secondary); font-size: 1rem; letter-spacing: 1px;
+  }
+  .card-body { 
+    font-size: 1.6rem; line-height: 1.3; font-weight: 600; color: #333;
+    flex:1; display:flex; align-items:center; text-align: center;
+  }
+
+  /* SELLO */
   .stamp {
-    position:absolute; inset:auto 8px 8px auto; font-size:28px; padding:6px 12px; border:3px solid; border-radius:8px;
-    transform:scale(.6) rotate(-10deg); opacity:0; pointer-events:none;
+    position: absolute; bottom: 20px; right: 20px;
+    border: 5px solid; padding: 5px 15px; border-radius: 12px;
+    font-weight: 900; font-size: 26px; text-transform: uppercase;
+    transform: rotate(-15deg) scale(0); opacity: 0;
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none;
+    background: rgba(255,255,255,0.9);
   }
-  .stamp.show{animation: stamp .45s ease forwards}
-  @keyframes stamp{
-    0%{transform:scale(.4) rotate(-12deg); opacity:0}
-    60%{transform:scale(1.1) rotate(-6deg); opacity:1}
-    100%{transform:scale(1) rotate(-8deg); opacity:1}
-  }
-  .stamp.ok{color:var(--good); border-color:var(--good)}
-  .stamp.op{color:#333; border-color:#333; background:#ffd}
-  .kit{display:flex; gap:8px; flex-wrap:wrap}
-  .tool{
-    min-width: var(--touch); min-height: var(--touch);
-    display:grid; place-items:center; font-size:28px; border:3px solid var(--ink); border-radius:14px;
-    padding:8px; cursor:pointer; background:#fff; position:relative;
-  }
-  .tool .label{position:absolute; bottom:-6px; transform:translateY(100%); font-size:12px; font-weight:800; background:#fff; padding:2px 6px; border:2px solid var(--ink); border-radius:999px}
+  .stamp.show { transform: rotate(-10deg) scale(1); opacity: 1; }
+  .stamp.hecho { color: var(--success); border-color: var(--success); }
+  .stamp.opinion { color: var(--accent); border-color: var(--accent); color: #d68c00; border-color:#d68c00; } /* Ajuste contraste */
+  .stamp.falsa { color: var(--secondary); border-color: var(--secondary); }
 
-  /* ===================== MISIÓN ===================== */
-  .mission-grid{display:grid; grid-template-columns: 260px 1fr 260px; gap:12px}
-  .tray{border:3px solid var(--ink); border-radius:12px; background:#fafafa; padding:10px; display:grid; gap:10px; align-content:start}
-  .tray-title{font-weight:900; display:flex; align-items:center; gap:8px}
-  .inbox-list{display:grid; gap:8px}
-  .mini{border:2px dashed var(--ink); border-radius:8px; padding:8px; background:#fff; font-size:12px}
-  .analysis{border:3px solid var(--ink); border-radius:12px; padding:12px; background:repeating-linear-gradient( #fff, #fff 34px, #f6f6f6 34px, #f6f6f6 68px)}
-  .dropzones{display:grid; grid-template-columns: repeat(3,1fr); gap:8px; margin-top:8px}
-  .drop{
-    min-height: var(--touch); display:grid; grid-auto-flow:column; place-items:center; gap:8px; padding:12px; border:3px dashed var(--ink); border-radius:12px; background:#fff; position:relative;
-    outline:none;
+  /* 3. BARRA DERECHA (BANDEJAS) */
+  .sidebar-right{
+    display:flex; flex-direction:column; gap:20px; align-items:center; z-index: 20;
   }
-  .drop[data-type="HECHO"]{background:#e8fff4}
-  .drop[data-type="OPINION"]{background:#fff7e8}
-  .drop[data-type="FALSA"]{background:#ffe8e8}
-  /* Modo daltonismo: se suman texturas (rayas/puntos) */
-  body.daltonismo .drop[data-type="HECHO"]{background:
-      repeating-linear-gradient(45deg, #fff, #fff 6px, #e8fff4 6px, #e8fff4 12px);}
-  body.daltonismo .drop[data-type="OPINION"]{background:
-      repeating-linear-gradient(90deg, #fff, #fff 6px, #fff7e8 6px, #fff7e8 12px);}
-  body.daltonismo .drop[data-type="FALSA"]{background:
-      repeating-linear-gradient(135deg, #fff, #fff 6px, #ffe8e8 6px, #ffe8e8 12px);}
-  .drop:focus{box-shadow:var(--focus)}
-  .hint-bubble{
-    position:absolute; top:-10px; right:-10px; transform:translateY(-100%); background:#fff; border:3px solid var(--ink); border-radius:12px; padding:8px 10px; font-weight:800;
-    box-shadow:var(--shadow);
+  .bin {
+    width: 100%; padding: 15px 5px;
+    border: 4px dashed #aaa; border-radius: 16px; background: rgba(255,255,255,0.7);
+    text-align: center; font-weight: bold; font-size: 0.95rem; cursor: pointer;
+    transition: 0.2s; position: relative;
   }
-  .tools-row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-  .meter{
-    height:20px; background:#eee; border:3px solid var(--ink); border-radius:999px; overflow:hidden; position:relative;
+  /* Iconos de bandeja */
+  .bin-icon { font-size: 2rem; display: block; margin-bottom: 5px; }
+  
+  .bin:hover, .bin.active { 
+    background: #fff; border-style: solid; transform: scale(1.05); 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
   }
-  .meter .bar{height:100%; width:60%; background:linear-gradient(90deg, var(--good), #6ad6b5)}
-  .counter{font-weight:900}
-  .caption{
-    position:fixed; left:50%; bottom:10px; transform:translateX(-50%);
-    background:rgba(0,0,0,.8); color:#fff; padding:6px 10px; border-radius:999px; font-weight:800; letter-spacing:.2px; display:none; z-index:1000;
-  }
-  .caption.show{display:block}
+  .bin[id$="hecho"].active { border-color: var(--success); background: #e0fff4; }
+  .bin[id$="opinion"].active { border-color: var(--accent); background: #fffbe6; }
+  .bin[id$="falsa"].active { border-color: var(--secondary); background: #ffe6f0; }
 
-  /* Drag */
-  .draggable{cursor:grab}
-  .dragging{opacity:.9; cursor:grabbing; box-shadow: 0 12px 30px rgba(0,0,0,.25)}
-  .target-glow{box-shadow:0 0 0 6px rgba(0,0,0,.12) inset, var(--focus)}
+  /* --- TUTORIAL & MODALES --- */
+  #dark-overlay {
+    position: fixed; inset: 0; background: rgba(43, 45, 66, 0.85); z-index: 1000;
+    display: none; 
+  }
+  .spotlight {
+    position: relative; z-index: 1001 !important;
+    background: #fff;
+    box-shadow: 0 0 0 100vmax rgba(43, 45, 66, 0.85);
+    pointer-events: auto !important;
+    border-radius: 20px;
+  }
 
-  /* ===================== RESULTADOS ===================== */
-  .result-grid{display:grid; grid-template-columns:1fr .9fr; gap:12px; align-items:start}
-  .trophy{font-size: 120px; display:grid; place-items:center; border:3px solid var(--ink); border-radius:16px; background:#fff}
-  .summary{border:3px solid var(--ink); border-radius:16px; padding:12px; background:#fff}
-  .list{display:grid; gap:6px}
-  .row{display:flex; justify-content:space-between; gap:10px; padding:8px 10px; border-bottom:2px dashed var(--ink)}
-  .row:last-child{border-bottom:none}
-  .award{font-weight:900; font-size: clamp(20px, 3vw, 28px);}
+  /* Caja de texto del tutorial (Estilo comic) */
+  #tuto-box {
+    position: fixed; bottom: 15%; left: 50%; transform: translateX(-50%);
+    background: #fff; padding: 25px; border-radius: 20px; border: 4px solid var(--dark);
+    width: 90%; max-width: 450px; text-align: center; z-index: 1002;
+    display: none; box-shadow: 10px 10px 0 rgba(0,0,0,0.2);
+  }
+  .tuto-arrow { font-size: 50px; position: absolute; animation: bounce 1s infinite; z-index: 1003; display:none; color: #fff; text-shadow: 0 4px 0 #000;}
+  @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-15px)} }
 
-  /* ===================== UTILES ===================== */
-  .sr-only{position:absolute!important; width:1px!important; height:1px!important; padding:0!important; margin:-1px!important; overflow:hidden!important; clip:rect(0,0,0,0)!important; white-space:nowrap!important; border:0!important}
-  .flex{display:flex; gap:10px; flex-wrap:wrap}
-  .right{justify-content:flex-end}
+  /* BURBUJAS DE PISTA (Estilo chat) */
+  .bubble {
+    position: absolute; left: 95px; top: 0; width: 200px;
+    background: var(--dark); color: #fff; padding: 15px; border-radius: 0 15px 15px 15px;
+    font-size: 1rem; z-index: 1005; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    box-shadow: 5px 5px 0 rgba(0,0,0,0.2); line-height: 1.4;
+  }
+  .bubble.show { opacity: 1; top: 10px; }
+
+  /* MODAL INICIO/FIN */
+  #modal-screen {
+    position: fixed; inset:0; background: var(--primary); z-index: 2000;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align: center; color: #fff;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.2) 2px, transparent 2px);
+    background-size: 30px 30px;
+  }
+  .modal-card {
+    background: #fff; color: var(--dark); padding: 40px; border-radius: 30px;
+    border: 5px solid var(--dark); box-shadow: 15px 15px 0 rgba(0,0,0,0.2);
+    max-width: 90%; width: 500px;
+  }
+  .big-btn {
+    background: var(--secondary); color:#fff; padding:15px 40px; font-size:1.5rem;
+    border:4px solid var(--dark); border-radius:50px; cursor:pointer; font-weight:bold;
+    margin-top: 20px; box-shadow: 5px 5px 0 rgba(0,0,0,0.3);
+    transition: transform 0.1s; display: inline-block;
+  }
+  .big-btn:active { transform: translate(3px, 3px); box-shadow: 2px 2px 0 rgba(0,0,0,0.3); }
+
+  /* Confeti */
+  .confetti { position: fixed; width: 12px; height: 12px; z-index: 3000; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  /* Media query para móviles pequeños */
+  @media (max-width: 600px) {
+    #game-area { grid-template-columns: 80px 1fr 80px; gap: 5px; }
+    .tool-btn { width: 60px; height: 60px; font-size: 30px; }
+    .tool-label { font-size: 9px; }
+    .card { min-height: 300px; width: 100%; padding: 15px; }
+    .card-body { font-size: 1.2rem; }
+    .bin { font-size: 0.8rem; padding: 10px 2px; }
+    .bin-icon { font-size: 1.5rem; }
+  }
+
 </style>
 </head>
 <body>
+
+<header>
+  <div class="logo">📰 Reportero<span style="color:var(--primary)">Kids</span></div>
+  <div class="score-board">⭐ Puntos: <span id="score">0</span></div>
+</header>
+
 <div id="app">
-  <header aria-label="Barra superior">
-    <div class="logo" aria-label="Título del juego">
-      <div class="badge">📰</div>
-      <div>La Redacción de la Verdad: <strong>Reportero Estrella</strong></div>
-    </div>
-    <div class="controls" role="toolbar" aria-label="Controles rápidos">
-      <label class="toggle" title="Música">
-        <input id="tg-music" type="checkbox" checked>
-        <span>🎵 Música</span>
-      </label>
-      <label class="toggle" title="Voz en off">
-        <input id="tg-voice" type="checkbox" checked>
-        <span>🗣️ Voz</span>
-      </label>
-      <label class="toggle" title="Subtítulos">
-        <input id="tg-captions" type="checkbox" checked>
-        <span>💬 Subtítulos</span>
-      </label>
-      <label class="toggle" title="Alto contraste">
-        <input id="tg-contrast" type="checkbox">
-        <span>⚫ Alto Contraste</span>
-      </label>
-      <label class="toggle" title="Modo daltonismo">
-        <input id="tg-cvd" type="checkbox">
-        <span>🧩 Daltonismo</span>
-      </label>
-    </div>
-  </header>
-
-  <main>
-    <!-- ===================== INICIO ===================== -->
-    <section id="screen-inicio" class="panel" aria-labelledby="tit-inicio">
-      <div class="start-grid">
-        <div class="newspaper" aria-label="Portada">
-          <div class="masthead">El Diario Escolar</div>
-          <div class="hero">
-            <div class="avatar-editor" aria-hidden="true">👨‍💼</div>
-            <div>
-              <h1 id="tit-inicio">La Redacción de la Verdad</h1>
-              <h2>Reportero Estrella</h2>
-              <p class="tagline">Distingue <strong>HECHO</strong>, <strong>OPINIÓN</strong> y <strong>NOTICIA FALSA</strong>.</p>
-              <p class="pill">Ciudadanía Digital · 3° Primaria</p>
-            </div>
-          </div>
-        </div>
-        <div class="cta-col">
-          <button id="btn-jugar" class="btn primary" aria-label="Iniciar juego">▶️ Jugar</button>
-          <button id="btn-como" class="btn secondary" aria-label="Cómo se juega">❓ Cómo se juega</button>
-          <div class="flex">
-            <button id="btn-acces" class="btn ghost" title="Accesibilidad">♿ Accesibilidad</button>
-            <button id="btn-credits" class="btn ghost" title="Créditos">ℹ️ Créditos</button>
-          </div>
-          <div class="mini" role="note">Tip: Teclado — 1=🔎, 2=⚖️, 3=🎯 · H=HECHO, O=OPINIÓN, F=FALSA</div>
-        </div>
+  <div id="game-area">
+    
+    <!-- BARRA IZQUIERDA -->
+    <div id="tool-bar" class="sidebar-left">
+      <div style="position:relative">
+        <div id="btn-source" class="tool-btn">🔎</div>
+        <div class="tool-label">FUENTE</div>
+        <div id="bub-source" class="bubble">...</div>
       </div>
-      <div class="flex right">
-        <span class="sr-only" aria-live="polite" id="live-init"></span>
+      <div style="position:relative">
+        <div id="btn-evidence" class="tool-btn">⚖️</div>
+        <div class="tool-label">PRUEBAS</div>
+        <div id="bub-evidence" class="bubble">...</div>
       </div>
-    </section>
-
-    <!-- ===================== BRIEFING ===================== -->
-    <section id="screen-brief" class="panel" hidden aria-labelledby="tit-brief">
-      <h2 id="tit-brief">Briefing en la Redacción</h2>
-      <div class="brief-grid">
-        <div class="editor-card" aria-label="Editor en Jefe">
-          <div class="editor-ava" aria-hidden="true">🧑‍✈️</div>
-          <div class="speech" id="brief-line" aria-live="polite">Regla #1: Hecho se comprueba. Opinión es lo que alguien cree.</div>
-          <div class="kit" aria-label="Kit de verificación">
-            <div class="tool" aria-label="Lupa de fuentes" data-tool="fuente" tabindex="0">🔎<span class="label">¿Quién lo dice?</span></div>
-            <div class="tool" aria-label="Balanza de evidencia" data-tool="evidencia" tabindex="0">⚖️<span class="label">¿Comprobable?</span></div>
-            <div class="tool" aria-label="Detector de intención" data-tool="intencion" tabindex="0">🎯<span class="label">¿Para qué?</span></div>
-          </div>
-        </div>
-        <div>
-          <div class="demo-row" aria-label="Demostración">
-            <div class="card" id="demo1">
-              <strong>Tarjeta:</strong>
-              <div>“El sol es una estrella”.</div>
-              <div class="stamp ok" id="stamp1">✅ HECHO</div>
-            </div>
-            <div class="card" id="demo2">
-              <strong>Tarjeta:</strong>
-              <div>“El helado de chocolate es el mejor”.</div>
-              <div class="stamp op" id="stamp2">🤔 OPINIÓN</div>
-            </div>
-          </div>
-          <div class="flex right" style="margin-top:10px">
-            <button id="btn-entendido" class="btn primary">¡Entendido!</button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ===================== MISIÓN ===================== -->
-    <section id="screen-mision" class="panel" hidden aria-labelledby="tit-mision">
-      <div class="tools-row" style="justify-content:space-between">
-        <h2 id="tit-mision">Misión: Clasifica los despachos</h2>
-        <div class="flex" role="toolbar" aria-label="Herramientas">
-          <div class="tool" title="¿Quién lo dice? (1)" data-tool="fuente" tabindex="0">🔎</div>
-          <div class="tool" title="¿Se puede comprobar? (2)" data-tool="evidencia" tabindex="0">⚖️</div>
-          <div class="tool" title="¿Por qué lo publican? (3)" data-tool="intencion" tabindex="0">🎯</div>
-        </div>
-      </div>
-
-      <div class="mission-grid">
-        <aside class="tray" aria-label="Bandeja de Entrada">
-          <div class="tray-title">📥 Entrada</div>
-          <div id="inbox" class="inbox-list"></div>
-          <div class="mini">Casos <span id="caseCounter" class="counter">1/5</span></div>
-          <div class="mini">Modo: <strong id="modeTag">Normal</strong></div>
-        </aside>
-
-        <div class="analysis" aria-label="Área de análisis">
-          <div id="currentCard" class="card draggable" tabindex="0" aria-describedby="cardHelp">
-            <div class="hint-bubble" id="miniHint" hidden>Usa 🔎, ⚖️ o 🎯</div>
-            <strong>Despacho</strong>
-            <div id="cardText">—</div>
-            <div class="stamp ok" id="bigStamp">—</div>
-          </div>
-          <div id="cardHelp" class="mini">Arrastra a una bandeja o usa H/O/F</div>
-          <div class="dropzones" aria-label="Bandejas de salida">
-            <button class="drop" data-type="HECHO" tabindex="0" aria-label="Bandeja HECHO">✅ HECHO</button>
-            <button class="drop" data-type="OPINION" tabindex="0" aria-label="Bandeja OPINIÓN">🤔 OPINIÓN</button>
-            <button class="drop" data-type="FALSA" tabindex="0" aria-label="Bandeja NOTICIA FALSA">🗑️ FALSA</button>
-          </div>
-          <div class="flex" style="margin-top:8px">
-            <div class="meter" aria-label="Medidor de confianza" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60">
-              <div id="bar" class="bar" style="width:60%"></div>
-            </div>
-            <div class="mini">Confianza: <strong id="confVal">60</strong>/100</div>
-          </div>
-        </div>
-
-        <aside class="tray" aria-label="Controles rápidos">
-          <div class="tray-title">⚙️ Controles</div>
-          <button id="btn-retry" class="btn block">🔁 Reintentar</button>
-          <button id="btn-toggle-voice" class="btn block">🔇 Silenciar Voz</button>
-          <button id="btn-toggle-captions" class="btn block">💬 Subtítulos</button>
-          <button id="btn-access" class="btn block">♿ Accesibilidad</button>
-          <div class="mini">Atajos: 1/2/3 herramientas · H/O/F bandejas</div>
-          <div class="mini">Enter aplica foco · Tab navega</div>
-        </aside>
-      </div>
-    </section>
-
-    <!-- ===================== RESULTADO ===================== -->
-    <section id="screen-resultado" class="panel" hidden aria-labelledby="tit-res">
-      <h2 id="tit-res">Resultados</h2>
-      <div class="result-grid">
-        <div class="trophy" id="trophy" aria-hidden="true">🏆</div>
-        <div class="summary">
-          <div class="award" id="awardTitle">Reportero del Año</div>
-          <p id="finalPhrase">“Un hecho es dato; opinión es sentir. Yo los distingo para no confundir.”</p>
-          <div class="list">
-            <div class="row"><span>Despachos analizados</span><strong id="sumTotal">5</strong></div>
-            <div class="row"><span>Hechos</span><strong id="sumHechos">0</strong></div>
-            <div class="row"><span>Opiniones</span><strong id="sumOpiniones">0</strong></div>
-            <div class="row"><span>Noticias falsas</span><strong id="sumFalsas">0</strong></div>
-            <div class="row"><span>Confianza final</span><strong id="sumConf">100</strong></div>
-          </div>
-          <div class="flex right" style="margin-top:10px">
-            <button id="btn-jugar-de-nuevo" class="btn primary">▶️ Jugar de nuevo</button>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- Subtítulos breves -->
-  <div id="captions" class="caption" role="status" aria-live="polite">—</div>
-
-  <!-- Modal Cómo se juega -->
-  <div id="modal" class="modal" aria-modal="true" role="dialog" aria-labelledby="howTitle" aria-hidden="true">
-    <div class="sheet how-grid">
-      <h3 id="howTitle">Cómo se juega</h3>
-      <div class="slides">
-        <div id="slide-illu" class="slide-illu">📰🧠</div>
-        <div id="slide-caption" class="slide-caption">Lee el despacho.</div>
-      </div>
-      <div class="nav-slides">
-        <button id="prevSlide" class="btn">◀</button>
-        <div class="dots">
-          <div class="dot active"></div>
-          <div class="dot"></div>
-          <div class="dot"></div>
-        </div>
-        <button id="nextSlide" class="btn">▶</button>
-      </div>
-      <div class="flex right">
-        <button id="closeModal" class="btn primary">¡Vamos!</button>
+      <div style="position:relative">
+        <div id="btn-intent" class="tool-btn">🎯</div>
+        <div class="tool-label">INTENCIÓN</div>
+        <div id="bub-intent" class="bubble">...</div>
       </div>
     </div>
+
+    <!-- CENTRO -->
+    <div class="center-stage">
+      <div id="card" class="card">
+        <div class="card-header">📌 Caso #<span id="case-num">0</span></div>
+        <div id="card-text" class="card-body">...</div>
+        <div id="stamp" class="stamp">HECHO</div>
+      </div>
+    </div>
+
+    <!-- BARRA DERECHA -->
+    <div id="bin-bar" class="sidebar-right">
+      <div id="bin-hecho" class="bin" onclick="manualClassify('HECHO')">
+        <span class="bin-icon">✅</span>VERDAD
+      </div>
+      <div id="bin-opinion" class="bin" onclick="manualClassify('OPINION')">
+        <span class="bin-icon">🤔</span>OPINIÓN
+      </div>
+      <div id="bin-falsa" class="bin" onclick="manualClassify('FALSA')">
+        <span class="bin-icon">🗑️</span>MENTIRA
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CAPAS DE TUTORIAL -->
+<div id="dark-overlay"></div>
+
+<div id="tuto-box">
+  <h2 id="tuto-title" style="margin:0 0 10px 0; color:var(--secondary)">Título</h2>
+  <p id="tuto-msg" style="font-size: 1.2rem; margin:0 0 20px 0">Instrucción</p>
+  <button id="tuto-btn" class="big-btn" style="padding:10px 25px; font-size:1.2rem; margin:0;">¡Entendido!</button>
+</div>
+
+<div id="tuto-arrow" class="tuto-arrow">👈</div>
+
+<!-- MODAL INICIO/FIN -->
+<div id="modal-screen">
+  <div class="modal-card">
+    <div style="font-size:80px">🕵️‍♂️</div>
+    <h1 style="margin:10px 0; color:var(--dark)">¡Hola Reportero!</h1>
+    <p style="font-size:1.2rem; line-height:1.5">Tu misión es descubrir la verdad.<br>Separa los Hechos, las Opiniones y las Mentiras.</p>
+    <button class="big-btn" onclick="initGame()">¡Empezar Misión!</button>
   </div>
 </div>
 
 <script>
-/* =========================================================
- * L A   R E D A C C I Ó N   D E   L A   V E R D A D
- * ---------------------------------------------------------
- * ESTRUCTURA DE DATOS SOLICITADA (visible para docentes)
- * =======================================================*/
-const casos = [
-  {id:1, tipoCorrecto:"HECHO", texto:"Ciencia Kids: Los elefantes...", pistas:{fuente:"Educativa verificada", evidencia:"Datos y números", intencion:"Informar"}},
-  {id:2, tipoCorrecto:"OPINION", texto:"Bloguero: La pizza con piña...", pistas:{fuente:"Blog personal", evidencia:"Gusto/sentimiento", intencion:"Persuadir"}},
-  {id:3, tipoCorrecto:"OPINION", texto:"Crítico: Aventura Espacial 3 es...", pistas:{fuente:"Reseñador", evidencia:"Juicios de valor", intencion:"Opinar"}},
-  {id:4, tipoCorrecto:"OPINION", texto:"Patrocinado: Súper Salto 20%...", pistas:{fuente:"Marca interesada", evidencia:"Dato puntual", intencion:"Vender"}},
-  {id:5, tipoCorrecto:"FALSA", texto:"Brócoli te hace invisible", pistas:{fuente:"Sitio de bromas", evidencia:"Imposible/ciencia", intencion:"Clickbait"}}
-];
-
-/* =========================================================
- * DATOS COMPLETOS DE LOS 5 DESPACHOS
- * (texto para niños + pistas de cada herramienta)
- * =======================================================*/
-const casosDetallados = [
-  {
-    id:1, tipoCorrecto:"HECHO",
-    texto:`Video de “Ciencia Kids”: “Los elefantes son los mamíferos terrestres más grandes. Pueden pesar hasta 6,000 kilos.”`,
-    pistas:{
-      fuente:"Fuente educativa verificada.",
-      evidencia:"Tiene datos y números → comprobable.",
-      intencion:"Informar."
-    }
+/* ================= DATOS AMPLIADOS (7 CASOS) ================= */
+const CASOS = [
+  { 
+    id:0, type:"HECHO", // Tutorial
+    text:"El agua hierve cuando se calienta a 100 grados.", 
+    hints:{s:"Libro de Ciencias.", e:"Se puede medir con termómetro.", i:"Enseñar un dato real."} 
   },
-  {
-    id:2, tipoCorrecto:"OPINION",
-    texto:`Bloguero: “¡La pizza con piña es la más deliciosa del universo! ¡Todos deberían probarla!”`,
-    pistas:{
-      fuente:"Autor: blog personal.",
-      evidencia:"Palabras de gusto/sentimiento.",
-      intencion:"Persuadir a probar."
-    }
+  { 
+    id:1, type:"FALSA", 
+    text:"¡Increíble! Comer piedras te permite volar.", 
+    hints:{s:"Página de bromas.", e:"¡Imposible! Las piedras pesan.", i:"Engañarte o hacer reír."} 
   },
-  {
-    id:3, tipoCorrecto:"OPINION",
-    texto:`Crítico: “El juego ‘Aventura Espacial 3’ es una decepción total. Gráficos anticuados, historia aburrida. El peor del año.”`,
-    pistas:{
-      fuente:"Reseñador de juegos.",
-      evidencia:"Juicios de valor, no mediciones.",
-      intencion:"Opinar/valorar."
-    }
+  { 
+    id:2, type:"HECHO", 
+    text:"París es la capital de Francia.", 
+    hints:{s:"Mapa del mundo oficial.", e:"Es un dato geográfico real.", i:"Informar."} 
   },
-  {
-    id:4, tipoCorrecto:"OPINION",
-    texto:`Video patrocinado: “Estudios demuestran que las zapatillas Súper Salto aumentan tu salto un 20%.”`,
-    pistas:{
-      fuente:"Fuente: la misma marca.",
-      evidencia:"Dato específico (20%).",
-      intencion:"Vender producto."
-    }
+  { 
+    id:3, type:"OPINION", 
+    text:"El helado de chocolate es el mejor del mundo.", 
+    hints:{s:"Blog de un niño.", e:"Es un gusto, a otros no les gusta.", i:"Decir lo que le gusta."} 
   },
-  {
-    id:5, tipoCorrecto:"FALSA",
-    texto:`Titular: “¡Científicos confirman que comer brócoli te hace invisible!”`,
-    pistas:{
-      fuente:"BromasDiarias.net (sitio de chistes).",
-      evidencia:"Contradice ciencia; imposible.",
-      intencion:"Clickbait/broma."
-    }
+  { 
+    id:4, type:"HECHO", 
+    text:"Los tiburones viven en el océano.", 
+    hints:{s:"Documental de animales.", e:"Científicos lo han visto.", i:"Enseñar sobre naturaleza."} 
+  },
+  { 
+    id:5, type:"OPINION", 
+    text:"Esa película es aburrida.", 
+    hints:{s:"Un crítico de cine.", e:"Es lo que él sintió, no un dato.", i:"Dar una reseña."} 
+  },
+  { 
+    id:6, type:"FALSA", 
+    text:"El dinero crece en los árboles.", 
+    hints:{s:"Dicho popular falso.", e:"Nadie ha visto un árbol de monedas.", i:"Es un mito."} 
   }
 ];
 
-/* =========================================================
- * ESTADO GLOBAL DEL JUEGO
- * =======================================================*/
-const state = {
-  stage: 'inicio',          // inicio -> briefing -> mision -> resultado
-  voiceOn: true,
-  captionsOn: true,
-  musicOn: true,
-  highContrast: false,
-  cvdMode: false,
-  confidence: 60,           // 0 - 100
-  index: 0,                 // caso actual (0..4)
-  resolved: 0,
-  counts: {HECHO:0, OPINION:0, FALSA:0},
-  bpm: 84,                  // música base
-  lastToolHint: '',         // texto de pista breve
-  shuffle: false,           // modo Última Hora (opcional)
-  order: [...Array(casosDetallados.length).keys()], // 0..4
+/* ================= ESTADO GLOBAL ================= */
+let state = {
+  idx: 0,
+  score: 0,
+  tutorialPhase: 0, 
+  isLocked: false
 };
 
-/* =========================================================
- * UTILIDADES DE UI
- * =======================================================*/
-const $ = sel => document.querySelector(sel);
-const $$ = sel => Array.from(document.querySelectorAll(sel));
+/* ================= INICIO ================= */
+function initGame() {
+  document.getElementById('modal-screen').style.display = 'none';
+  loadCard(0);
+  startTutorialSequence();
+}
 
-function showScreen(id){
-  ["#screen-inicio","#screen-brief","#screen-mision","#screen-resultado"].forEach(s=>{
-    const el=$(s);
-    if(!el) return;
-    if(s === id){ el.hidden = false; } else { el.hidden = true; }
+function loadCard(index) {
+  const c = CASOS[index];
+  
+  // Fin del juego
+  if(!c) {
+    document.getElementById('modal-screen').style.display = 'flex';
+    document.querySelector('.modal-card h1').textContent = "¡Misión Cumplida!";
+    document.querySelector('.modal-card p').innerHTML = `Lograste <strong>${state.score}</strong> puntos.<br>¡Eres un experto de la verdad!`;
+    document.querySelector('.big-btn').textContent = "Jugar otra vez";
+    document.querySelector('.big-btn').onclick = () => location.reload();
+    return;
+  }
+  
+  const card = document.getElementById('card');
+  const text = document.getElementById('card-text');
+  const stamp = document.getElementById('stamp');
+  const num = document.getElementById('case-num');
+  
+  // Animación de entrada
+  card.style.transform = 'translateY(100vh) rotate(-10deg)';
+  stamp.className = 'stamp'; // Ocultar sello
+  
+  setTimeout(() => {
+    text.textContent = c.text;
+    num.textContent = index;
+    card.style.transition = '0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'; // Efecto rebote
+    card.style.transform = 'translateY(0) rotate(0)';
+  }, 100);
+}
+
+/* ================= TUTORIAL CON REFLECTOR ================= */
+const overlay = document.getElementById('dark-overlay');
+const tutoBox = document.getElementById('tuto-box');
+const tutoTitle = document.getElementById('tuto-title');
+const tutoMsg = document.getElementById('tuto-msg');
+const tutoBtn = document.getElementById('tuto-btn');
+const arrow = document.getElementById('tuto-arrow');
+
+function startTutorialSequence() {
+  state.tutorialPhase = 1;
+  overlay.style.display = 'block';
+  
+  // PASO 1: LEER
+  highlightElement('card', "Paso 1: Leer", "Primero lee el mensaje de la tarjeta.", "Ya leí", () => {
+    state.tutorialPhase = 2;
+    highlightElement('tool-bar', "Paso 2: Investigar", "¡No adivines! Usa la LUPA para ver quién escribió esto.", null, null);
+    tutoBtn.style.display = 'none'; 
+    
+    // Flecha
+    const lupa = document.getElementById('btn-source');
+    const rect = lupa.getBoundingClientRect();
+    arrow.style.display = 'block';
+    arrow.style.left = (rect.right + 10) + 'px';
+    arrow.style.top = (rect.top + 10) + 'px';
   });
-  if(id==="#screen-inicio") state.stage='inicio';
-  if(id==="#screen-brief") state.stage='briefing';
-  if(id==="#screen-mision") state.stage='mision';
-  if(id==="#screen-resultado") state.stage='resultado';
 }
 
-function renderInbox(){
-  const inbox = $("#inbox");
-  inbox.innerHTML="";
-  const remaining = state.order.slice(state.index);
-  remaining.forEach((idx, i)=>{
-    const cas = casosDetallados[idx];
-    const mini = document.createElement('div');
-    mini.className='mini';
-    mini.textContent = `#${cas.id} · ${shorten(cas.texto, 38)}`;
-    inbox.appendChild(mini);
-  });
-  $("#caseCounter").textContent = `${state.index+1}/${casosDetallados.length}`;
-}
-
-function renderCard(){
-  const cas = currentCase();
-  $("#cardText").textContent = cas ? cas.texto : "—";
-  $("#bigStamp").style.opacity=0;
-  $("#miniHint").hidden=false;
-}
-
-function currentCase(){
-  const idx = state.order[state.index];
-  return casosDetallados[idx];
-}
-
-function setConfidence(delta){
-  state.confidence = clamp(state.confidence + delta, 0, 100);
-  $("#confVal").textContent = state.confidence;
-  $("#bar").style.width = state.confidence + "%";
-  $(".meter").setAttribute('aria-valuenow', String(state.confidence));
-  if(state.confidence<=0){
-    endGame(false);
+function highlightElement(id, title, msg, btnText, callback) {
+  document.querySelectorAll('.spotlight').forEach(el => el.classList.remove('spotlight'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('spotlight');
+  
+  tutoBox.style.display = 'block';
+  tutoTitle.textContent = title;
+  tutoMsg.textContent = msg;
+  
+  if(btnText) {
+    tutoBtn.style.display = 'inline-block';
+    tutoBtn.textContent = btnText;
+    tutoBtn.onclick = callback;
+  } else {
+    tutoBtn.style.display = 'none';
   }
 }
 
-function shorten(t, n){ return t.length>n ? t.slice(0,n-1)+"…" : t; }
-function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-
-/* =========================================================
- * VOZ EN OFF + SUBTÍTULOS
- * =======================================================*/
-let voice=null;
-function findVoice(){
-  const voices = speechSynthesis.getVoices();
-  // Selección preferida: español (México) si existe
-  voice = voices.find(v=>/es(-|_)MX/i.test(v.lang)) ||
-          voices.find(v=>/es(-|_)ES/i.test(v.lang)) ||
-          voices.find(v=>/es/i.test(v.lang)) || null;
-}
-if('speechSynthesis' in window){
-  window.speechSynthesis.onvoiceschanged = findVoice;
-  findVoice();
+function endTutorial() {
+  state.tutorialPhase = 0;
+  overlay.style.display = 'none';
+  tutoBox.style.display = 'none';
+  arrow.style.display = 'none';
+  document.querySelectorAll('.spotlight').forEach(el => el.classList.remove('spotlight'));
 }
 
-let speaking=false;
-function speak(text, caption= ""){
-  if(!state.voiceOn || !('speechSynthesis' in window)) { showCaption(caption||text); return; }
-  try{
-    speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    if(voice) u.voice=voice;
-    u.rate=0.98; u.pitch=1; u.lang = voice?.lang || 'es-MX';
-    speaking=true;
-    u.onend = ()=>{ speaking=false; };
-    speechSynthesis.speak(u);
-    showCaption(caption || microCaption(text));
-  }catch(e){ /* no-op */ }
-}
-function microCaption(t){
-  // Genera subtítulo breve (máx 7 palabras)
-  const words = t.split(/\s+/).slice(0,7);
-  return words.join(" ").replace(/[.,;:!?]$/,"") + (words.length>=7?"…":"");
-}
-let capTO=null;
-function showCaption(t){
-  if(!state.captionsOn) return;
-  const el=$("#captions");
-  el.textContent = t;
-  el.classList.add("show");
-  clearTimeout(capTO);
-  capTO=setTimeout(()=>el.classList.remove("show"), 2500);
-}
+/* ================= HERRAMIENTAS ================= */
+document.getElementById('btn-source').onclick = () => showHint('s', 'bub-source');
+document.getElementById('btn-evidence').onclick = () => showHint('e', 'bub-evidence');
+document.getElementById('btn-intent').onclick = () => showHint('i', 'bub-intent');
 
-/* =========================================================
- * SONIDOS (WebAudio) — sin archivos externos
- * =======================================================*/
-let AC=null;
-function ac(){ if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); return AC; }
-
-function beep(freq=440, dur=0.12, type='sine', gain=0.06){
-  const ctx=ac();
-  const o=ctx.createOscillator(); const g=ctx.createGain();
-  o.type=type; o.frequency.value=freq;
-  g.gain.value=gain;
-  o.connect(g).connect(ctx.destination);
-  const t=ctx.currentTime;
-  o.start(t);
-  o.stop(t+dur);
-}
-
-function sfx(type){
-  // “prensa imprime” (acierto), “error de redacción” (fallo), “alarma fake news” (grave)
-  const ctx=ac();
-  if(type==='success'){
-    // pequeña ráfaga “prensa”
-    [220,330,440].forEach((f,i)=> setTimeout(()=>beep(f,0.08,'square',0.05), i*60));
-  }else if(type==='soft'){
-    beep(220,0.08,'triangle',0.05); setTimeout(()=>beep(180,0.12,'triangle',0.04),90);
-  }else if(type==='alarm'){
-    // sirena breve
-    let t0=ctx.currentTime;
-    const o=ctx.createOscillator(), g=ctx.createGain();
-    o.connect(g).connect(ctx.destination);
-    o.type='sawtooth'; g.gain.value=0.05;
-    o.frequency.setValueAtTime(400, t0);
-    o.frequency.linearRampToValueAtTime(800, t0+0.25);
-    o.frequency.linearRampToValueAtTime(400, t0+0.5);
-    o.start(t0); o.stop(t0+0.6);
+function showHint(key, bubId) {
+  if(state.isLocked) return;
+  const hint = CASOS[state.idx].hints[key];
+  const bub = document.getElementById(bubId);
+  
+  document.querySelectorAll('.bubble').forEach(b => b.classList.remove('show'));
+  bub.textContent = hint;
+  bub.classList.add('show');
+  
+  // Lógica Tutorial
+  if(state.tutorialPhase === 2 && key === 's') {
+    state.tutorialPhase = 3;
+    arrow.style.display = 'none';
+    setTimeout(() => {
+      highlightElement('bin-bar', "Paso 3: Decidir", "El libro de ciencias dice la verdad. ¡Es un HECHO! Arrastra la tarjeta a la bandeja VERDE.", "¡Listo!", () => endTutorial());
+    }, 1500);
   }
 }
 
-/* ===================== MÚSICA TIPO NEWSROOM ===================== */
-let musicTimer=null;
-function startMusic(){
-  stopMusic();
-  if(!state.musicOn) return;
-  const ctx=ac(); // ensure context
-  let step=0;
-  function tick(){
-    // patrón simple: bombo, caja, campanilla — sube BPM según progreso
-    const prog = state.index / (casosDetallados.length-1);
-    const bpm = 84 + Math.round( prog * 24 ); // acelera
-    state.bpm=bpm;
-    const beatMs = 60000/bpm;
-    // bombo
-    if(step%4===0){ beep(120,0.06,'sine',0.07); }
-    // caja
-    if(step%4===2){ beep(200,0.05,'square',0.05); }
-    // campanilla
-    if(step%2===1){ setTimeout(()=>beep(880,0.02,'triangle',0.03), 20); }
-    step=(step+1)%16;
-    musicTimer = setTimeout(tick, beatMs/2);
-  }
-  tick();
-}
-function stopMusic(){ if(musicTimer){ clearTimeout(musicTimer); musicTimer=null; } }
+/* ================= JUGABILIDAD ================= */
+// CLIC MANUAL
+let cardSelected = false;
+document.getElementById('card').onclick = () => {
+  if(state.tutorialPhase > 0 || state.isLocked) return;
+  cardSelected = !cardSelected;
+  document.getElementById('card').classList.toggle('selected', cardSelected);
+};
 
-/* =========================================================
- * BRIEFING: animación de sellos
- * =======================================================*/
-function runBriefing(){
-  showScreen("#screen-brief");
-  speak("Regla número uno: Hecho se comprueba. Opinión es lo que alguien cree.","Regla #1: Hecho vs opinión");
-  setTimeout(()=> $("#stamp1").classList.add("show"), 700);
-  setTimeout(()=> { $("#stamp2").classList.add("show"); }, 1300);
-  setTimeout(()=>{
-    speak("Este es tu kit de verificación. Lupa, balanza y detector.","Tu kit de verificación");
-  }, 1500);
-}
-
-/* =========================================================
- * MISIÓN — Render, herramientas, clasificación
- * =======================================================*/
-function startMission(){
-  showScreen("#screen-mision");
-  state.index=0; state.resolved=0; state.confidence=60; state.counts={HECHO:0,OPINION:0,FALSA:0};
-  $("#confVal").textContent=state.confidence; $("#bar").style.width=state.confidence+"%";
-  $("#modeTag").textContent = state.shuffle ? "Última Hora" : "Normal";
-  if(state.shuffle){ state.order = shuffle([...state.order]); }
-  renderInbox(); renderCard(); startMusic();
-  speak("Objetivo: decide si es HECHO, OPINIÓN o NOTICIA FALSA.","Clasifica correctamente");
-}
-
-function nextCaso(){
-  state.index++;
-  if(state.index >= casosDetallados.length){
-    endGame(true);
-  }else{
-    renderInbox(); renderCard(); startMusic();
+function manualClassify(type) {
+  if(isDragging) return;
+  if(cardSelected || state.tutorialPhase === 0) {
+    checkAnswer(type);
+    cardSelected = false;
+    document.getElementById('card').classList.remove('selected');
   }
 }
 
-function applyTool(tool){
-  const cas = currentCase(); if(!cas) return;
-  const map = {fuente:"🔎", evidencia:"⚖️", intencion:"🎯"};
-  const hint = cas.pistas[tool] || "";
-  state.lastToolHint = hint;
-  showHint(`${map[tool]} ${hint}`);
-  // voz breve
-  speak(hint, hint);
-  // efecto visual
-  const card=$("#currentCard"); card.classList.add("target-glow");
-  setTimeout(()=>card.classList.remove("target-glow"), 600);
+// DRAG & DROP
+const card = document.getElementById('card');
+let isDragging = false;
+let startX, startY;
+
+card.addEventListener('pointerdown', (e) => {
+  if(state.tutorialPhase > 0 || state.isLocked) return;
+  isDragging = true;
+  card.setPointerCapture(e.pointerId);
+  card.style.transition = 'none';
+  const rect = card.getBoundingClientRect();
+  startX = e.clientX - rect.left;
+  startY = e.clientY - rect.top;
+});
+
+card.addEventListener('pointermove', (e) => {
+  if(!isDragging) return;
+  e.preventDefault();
+  let x = e.clientX - startX;
+  let y = e.clientY - startY;
+  
+  card.style.position = 'fixed';
+  card.style.left = x + 'px';
+  card.style.top = y + 'px';
+  card.style.transform = 'rotate(5deg) scale(1.1)';
+  
+  checkHover(e.clientX, e.clientY);
+});
+
+card.addEventListener('pointerup', (e) => {
+  if(!isDragging) return;
+  isDragging = false;
+  card.style.position = ''; card.style.left = ''; card.style.top = ''; card.style.transform = ''; card.style.transition = '0.3s';
+  
+  const type = getDropType(e.clientX, e.clientY);
+  if(type) checkAnswer(type);
+});
+
+function checkHover(x, y) {
+  ['HECHO','OPINION','FALSA'].forEach(t => {
+    const el = document.getElementById('bin-'+t.toLowerCase());
+    const r = el.getBoundingClientRect();
+    if(x > r.left && x < r.right && y > r.top && y < r.bottom) el.classList.add('active');
+    else el.classList.remove('active');
+  });
 }
 
-function showHint(text){
-  const b=$("#miniHint");
-  b.hidden=false; b.textContent = text;
-  b.animate([{transform:"translateY(-120%)",opacity:0},{transform:"translateY(-100%)",opacity:1}], {duration:180, fill:"forwards"});
-  setTimeout(()=>{
-    b.animate([{opacity:1},{opacity:0}], {duration:250, fill:"forwards"});
-  }, 1600);
+function getDropType(x, y) {
+  let found = null;
+  ['HECHO','OPINION','FALSA'].forEach(t => {
+    const el = document.getElementById('bin-'+t.toLowerCase());
+    el.classList.remove('active');
+    const r = el.getBoundingClientRect();
+    if(x > r.left && x < r.right && y > r.top && y < r.bottom) found = t;
+  });
+  return found;
 }
 
-function classify(tipo){
-  const cas = currentCase(); if(!cas) return;
-  const correct = cas.tipoCorrecto;
-  const big=$("#bigStamp");
-  const isGrave = (cas.id===5 && tipo!=="FALSA"); // publicar falsa
-  const isCorrect = (tipo===correct);
-
-  if(isCorrect){
-    sfx('success');
-    setConfidence(+20);
-    state.resolved++;
-    state.counts[tipo]++; // sumar por tipo correcto
-    big.textContent = (tipo==="HECHO"?"✅ HECHO": tipo==="OPINION"?"🤔 OPINIÓN":"🗑️ FALSA");
-    big.className = "stamp ok show";
-    speak("¡Clasificación correcta!","¡Correcto!");
-    setTimeout(()=> nextCaso(), 900);
-  }else{
-    if(isGrave){
-      sfx('alarm');
-      setConfidence(-40);
-      speak("¡Alerta: noticia falsa! Pide retracto.","¡Alerta: noticia falsa!");
-      // no avanzamos; permitimos retracto (intento otra vez)
-      flashDrop("FALSA");
-    }else{
-      sfx('soft');
-      setConfidence(-15);
-      speak("Revisa evidencia: ¿comprobable o sentir?","Revisa: dato o sentir");
-      // permitir corregir: no avanzamos
-      flashDrop(correct);
-    }
+/* ================= VERIFICAR Y EFECTOS ================= */
+function checkAnswer(userType) {
+  if(state.isLocked) return;
+  
+  const realType = CASOS[state.idx].type;
+  const stamp = document.getElementById('stamp');
+  
+  if(userType === realType) {
+    // ACIERTO
+    state.isLocked = true;
+    stamp.textContent = userType === "HECHO" ? "¡VERDAD!" : userType === "FALSA" ? "¡MENTIRA!" : "OPINIÓN";
+    stamp.className = `stamp show ${userType.toLowerCase()}`;
+    state.score += 10;
+    document.getElementById('score').textContent = state.score;
+    triggerConfetti();
+    
+    setTimeout(() => {
+      state.idx++;
+      state.isLocked = false;
+      loadCard(state.idx);
+    }, 2000);
+    
+  } else {
+    // ERROR
+    card.animate([
+      { transform: 'translateX(0)' },
+      { transform: 'translateX(-10px) rotate(-5deg)' },
+      { transform: 'translateX(10px) rotate(5deg)' },
+      { transform: 'translateX(0)' }
+    ], { duration: 400 });
   }
 }
 
-function flashDrop(type){
-  const el = $(`.drop[data-type="${type}"]`);
-  if(!el) return;
-  el.classList.add("target-glow");
-  setTimeout(()=> el.classList.remove("target-glow"), 750);
-}
-
-/* =========================================================
- * DRAG & DROP ACCESIBLE (pointer + teclado)
- * =======================================================*/
-let dragging=false, dragOffset=[0,0];
-
-function setupDrag(){
-  const card=$("#currentCard");
-  card.addEventListener("pointerdown", (e)=>{
-    dragging=true; card.setPointerCapture(e.pointerId);
-    card.classList.add("dragging");
-    const rect=card.getBoundingClientRect();
-    dragOffset=[e.clientX-rect.left, e.clientY-rect.top];
-  });
-  card.addEventListener("pointermove", (e)=>{
-    if(!dragging) return;
-    const x=e.clientX-dragOffset[0], y=e.clientY-dragOffset[1];
-    card.style.position="absolute"; card.style.left=x+"px"; card.style.top=y+"px"; card.style.zIndex=20;
-    // hover sobre dropzones
-    $$(".drop").forEach(d=>{
-      const r=d.getBoundingClientRect();
-      const inside = e.clientX>r.left && e.clientX<r.right && e.clientY>r.top && e.clientY<r.bottom;
-      d.classList.toggle("target-glow", inside);
-    });
-  });
-  card.addEventListener("pointerup", (e)=>{
-    if(!dragging) return;
-    dragging=false; card.releasePointerCapture(e.pointerId);
-    card.classList.remove("dragging");
-    // drop?
-    let dropped=null;
-    $$(".drop").forEach(d=>{
-      const r=d.getBoundingClientRect();
-      const inside = e.clientX>r.left && e.clientX<r.right && e.clientY>r.top && e.clientY<r.bottom;
-      d.classList.remove("target-glow");
-      if(inside) dropped = d.dataset.type;
-    });
-    // reset card position
-    card.style.position=""; card.style.left=""; card.style.top=""; card.style.zIndex="";
-    if(dropped){ classify(dropped); }
-  });
-
-  // Teclado: H/O/F para soltar; Enter sobre bandeja aplica
-  window.addEventListener("keydown", (e)=>{
-    if(state.stage!=='mision') return;
-    if(e.key==='1') applyTool('fuente');
-    else if(e.key==='2') applyTool('evidencia');
-    else if(e.key==='3') applyTool('intencion');
-    else if(/^[hH]$/.test(e.key)) classify('HECHO');
-    else if(/^[oO]$/.test(e.key)) classify('OPINION');
-    else if(/^[fF]$/.test(e.key)) classify('FALSA');
-  });
-
-  $$(".drop").forEach(d=>{
-    d.addEventListener("keydown", (e)=>{
-      if(e.key==='Enter' || e.key===' '){
-        e.preventDefault();
-        classify(d.dataset.type);
-      }
-    });
-  });
-
-  // Acceso por teclado a herramientas
-  $$(".tool").forEach(t=>{
-    t.addEventListener("keydown", (e)=>{
-      if(e.key==='Enter' || e.key===' '){
-        e.preventDefault(); applyTool(t.dataset.tool);
-      }
-    });
-    t.addEventListener("click", ()=>applyTool(t.dataset.tool));
-  });
-}
-
-/* =========================================================
- * FIN DE JUEGO
- * =======================================================*/
-function endGame(victory){
-  stopMusic();
-  showScreen("#screen-resultado");
-  const total = casosDetallados.length;
-  $("#sumTotal").textContent = String(total);
-  $("#sumHechos").textContent = String(state.counts.HECHO);
-  $("#sumOpiniones").textContent = String(state.counts.OPINION);
-  $("#sumFalsas").textContent = String(state.counts.FALSA);
-  $("#sumConf").textContent = String(state.confidence);
-  if(victory && state.confidence>0 && state.resolved===total){
-    $("#awardTitle").textContent="Premio: Reportero del Año";
-    $("#trophy").textContent="🏆";
-    speak("¡Excelente! Eres Reportero del Año.","¡Reportero del Año!");
-  }else{
-    $("#awardTitle").textContent="El Editor dice: Volvamos a entrenar";
-    $("#trophy").textContent="📝";
-    speak("Nos falta práctica. Volvamos a entrenar.","Volvamos a entrenar");
+function triggerConfetti() {
+  for(let i=0; i<30; i++) {
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.style.background = ['#ff0000','#00ff00','#0000ff','#ffff00'][Math.floor(Math.random()*4)];
+    c.style.left = Math.random()*100 + 'vw';
+    c.style.animationDuration = (Math.random()*1 + 1) + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 2000);
   }
-  $("#finalPhrase").textContent = "Un hecho es dato; opinión es sentir. Yo los distingo para no confundir.";
 }
 
-/* =========================================================
- * EVENTOS DE UI (Inicio, Modal, Controles)
- * =======================================================*/
-$("#btn-jugar").addEventListener("click", ()=>{
-  runBriefing();
-});
-$("#btn-como").addEventListener("click", ()=> openHow(true));
-$("#btn-credits").addEventListener("click", ()=>{
-  speak("Juego didáctico sin librerías externas. Sonido y música generados con audio web.","Juego didáctico sin librerías");
-});
-$("#btn-acces").addEventListener("click", ()=> {
-  speak("Activa voz, subtítulos o alto contraste en la barra superior.","Revisa accesibilidad arriba");
-});
-
-/* Modal Cómo se juega */
-const slides = [
-  {illu:"📰🧠", cap:"Lee el despacho."},
-  {illu:"🔎⚖️🎯", cap:"Usa las herramientas."},
-  {illu:"✅ 🤔 🗑️", cap:"Arrastra a la bandeja correcta."}
-];
-let slideIdx=0;
-function openHow(open){
-  const modal=$("#modal");
-  modal.classList.toggle('open', open);
-  modal.setAttribute('aria-hidden', open?"false":"true");
-  if(open){ showSlide(0); }
-}
-function showSlide(i){
-  slideIdx = (i+slides.length)%slides.length;
-  $("#slide-illu").textContent = slides[slideIdx].illu;
-  $("#slide-caption").textContent = slides[slideIdx].cap;
-  $$(".dot").forEach((d,j)=> d.classList.toggle('active', j===slideIdx));
-}
-$("#prevSlide").addEventListener("click", ()=>showSlide(slideIdx-1));
-$("#nextSlide").addEventListener("click", ()=>showSlide(slideIdx+1));
-$("#closeModal").addEventListener("click", ()=>openHow(false));
-$("#btn-entendido").addEventListener("click", ()=> startMission());
-
-/* Controles del panel derecho */
-$("#btn-retry").addEventListener("click", ()=> { state.order=[0,1,2,3,4]; startMission(); });
-$("#btn-toggle-voice").addEventListener("click", ()=>{
-  state.voiceOn = !state.voiceOn;
-  $("#btn-toggle-voice").textContent = state.voiceOn? "🔇 Silenciar Voz" : "🔊 Activar Voz";
-  if(!state.voiceOn) speechSynthesis?.cancel();
-});
-$("#btn-toggle-captions").addEventListener("click", ()=>{
-  state.captionsOn = !state.captionsOn;
-  $("#btn-toggle-captions").textContent = state.captionsOn? "💬 Subtítulos" : "💬 Subtítulos: OFF";
-});
-
-/* Toggles del header (sincronizados) */
-$("#tg-music").addEventListener("change", (e)=>{
-  state.musicOn = e.target.checked; if(state.stage==='mision'){ startMusic(); } else { if(!state.musicOn) stopMusic(); }
-});
-$("#tg-voice").addEventListener("change", (e)=>{
-  state.voiceOn = e.target.checked;
-  if(!state.voiceOn) speechSynthesis?.cancel();
-});
-$("#tg-captions").addEventListener("change", (e)=>{ state.captionsOn = e.target.checked; });
-$("#tg-contrast").addEventListener("change", (e)=>{ document.body.classList.toggle('alto-contraste', e.target.checked); });
-$("#tg-cvd").addEventListener("change", (e)=>{ document.body.classList.toggle('daltonismo', e.target.checked); });
-
-/* Botón accesibilidad dentro misión */
-$("#btn-access").addEventListener("click", ()=>{
-  speak("Puedes alternar alto contraste o daltonismo en la parte superior.","Ajusta contraste o daltonismo");
-});
-
-/* Botón volver a jugar */
-$("#btn-jugar-de-nuevo").addEventListener("click", ()=>{
-  state.order=[0,1,2,3,4];
-  showScreen("#screen-inicio");
-});
-
-/* =========================================================
- * AYUDA: mezclado aleatorio (preparado para “Última Hora”)
- * =======================================================*/
-function shuffle(a){
-  for(let i=a.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [a[i],a[j]]=[a[j],a[i]];
-  }
-  return a;
-}
-
-/* =========================================================
- * INICIALIZACIÓN
- * =======================================================*/
-function init(){
-  // Briefing: sellos ya listos, herramientas clicables
-  $("#stamp1").classList.remove("show");
-  $("#stamp2").classList.remove("show");
-  // Misma lógica de herramientas en briefing (didáctico, no altera juego)
-  $$("#screen-brief .tool").forEach(t=>{
-    t.addEventListener("click", ()=>{
-      const txt = t.dataset.tool==="fuente" ? "¿Quién lo dice?" : t.dataset.tool==="evidencia" ? "¿Se puede comprobar?" : "¿Por qué lo publican?";
-      speak(txt, txt);
-    });
-  });
-  // Drag
-  setupDrag();
-  // Música parada en inicio
-  stopMusic();
-}
-init();
-
-/* Acciones accesibles: clic en bandejas */
-$$(".drop").forEach(d=> d.addEventListener("click", ()=> classify(d.dataset.type)));
-
-/* =========================================================
- * ACCIONES DE USUARIO (con poco texto en pantalla)
- * =======================================================*/
-
-/* ===================== FIN: UTILES EXTRA ===================== */
 </script>
 </body>
 </html>
