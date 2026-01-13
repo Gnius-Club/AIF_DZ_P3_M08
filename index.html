@@ -6,40 +6,7 @@
     <title>Playbook-P3-TM8</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        /* Estilos base para asegurar visualización si style.css no carga */
-        body { font-family: 'Roboto', sans-serif; margin: 0; padding: 0; background-color: #f4f7f6; color: #333; }
-        header { background-color: #2c3e50; color: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
-        .main-container { display: flex; padding: 2rem; gap: 2rem; }
-        .activity-list { width: 250px; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .activity-list ul { list-style: none; padding: 0; }
-        .activity-list li { margin-bottom: 0.5rem; }
-        .activity-list a { text-decoration: none; color: #2c3e50; font-weight: 500; }
-        .content { flex: 1; }
-        .activity-card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-        .objective-box { background: #e8f4fd; border-left: 5px solid #3498db; padding: 1rem; margin: 1rem 0; }
-        .prompt-box { background: #f9f9f9; border: 1px solid #ddd; padding: 1rem; border-radius: 4px; position: relative; }
-        .copy-btn { position: absolute; top: 10px; right: 10px; background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
-        .essentials-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0; }
-        .essential-card { background: #fff; border: 1px solid #eee; padding: 1rem; border-radius: 8px; text-align: center; }
-        .essential-icon { font-size: 2rem; margin-bottom: 0.5rem; }
-        .materials-checklist { display: flex; flex-direction: column; gap: 0.5rem; margin: 1rem 0; }
-        .timeline { margin: 1rem 0; }
-        .timeline-item { display: flex; gap: 1rem; margin-bottom: 1rem; }
-        .timeline-dot { background: #3498db; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .time-badge { background: #eee; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; }
-        .roles-section { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 1rem 0; }
-        .role-card { padding: 1rem; border-radius: 8px; }
-        .role-teacher { background: #fff3e0; border-top: 5px solid #ff9800; }
-        .role-xolo { background: #e8f5e9; border-top: 5px solid #4caf50; }
-        .role-student { background: #e3f2fd; border-top: 5px solid #2196f3; }
-        .slide-reference { background: #f5f5f5; border: 1px dashed #ccc; padding: 1rem; margin-top: 1rem; border-radius: 8px; }
-        .highlight-text { font-weight: bold; color: #2c3e50; }
-        .collapsible-button { background: #eee; border: none; padding: 10px; width: 100%; text-align: left; cursor: pointer; font-weight: bold; }
-        .collapsible-content { display: none; padding: 1rem; border: 1px solid #eee; border-top: none; }
-        pre { white-space: pre-wrap; word-wrap: break-word; }
-    </style>
-</head>
+ </head>
 <body>
     <header>
         <h1><span class="book-icon">📋</span> <strong>Playbook: Misión 8 - 3ero de Primaria</strong></h1>
@@ -468,42 +435,6 @@
             </div>
         </main>
     </div>
-    <script>
-        // Funcionalidad básica para interactividad del Playbook
-        document.querySelectorAll('.collapsible-button').forEach(button => {
-            button.addEventListener('click', () => {
-                const content = button.nextElementSibling;
-                content.style.display = content.style.display === 'block' ? 'none' : 'block';
-            });
-        });
-
-        function copyPrompt(id) {
-            const text = document.getElementById(id).innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Prompt copiado al portapapeles');
-            });
-        }
-
-        // Temporizadores de actividad
-        document.querySelectorAll('.timer-start-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                let duration = parseInt(btn.getAttribute('data-duration'));
-                const display = btn.previousElementSibling;
-                btn.disabled = true;
-                
-                const timer = setInterval(() => {
-                    let minutes = Math.floor(duration / 60);
-                    let seconds = duration % 60;
-                    display.innerText = `⏱️ ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-                    
-                    if (--duration < 0) {
-                        clearInterval(timer);
-                        display.innerText = "⏱️ ¡Tiempo cumplido!";
-                        btn.disabled = false;
-                    }
-                }, 1000);
-            });
-        });
-    </script>
+  <script src="script.js"></script>
 </body>
 </html></html>
